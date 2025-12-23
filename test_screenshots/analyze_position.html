@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Position Analysis</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+        .screenshot-container {
+            margin: 30px 0;
+            border: 2px solid #0f0;
+            padding: 10px;
+        }
+        .screenshot-container img {
+            display: block;
+            max-width: 100%;
+            border: 1px solid #0f0;
+        }
+        .grid-overlay {
+            position: relative;
+            display: inline-block;
+        }
+        .position-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: red;
+            opacity: 0.8;
+        }
+        .label {
+            position: absolute;
+            left: 10px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            padding: 2px 5px;
+            font-size: 12px;
+        }
+        .info {
+            color: #0ff;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Position Analysis Tool</h1>
+    <p class="info">Red line shows expected 22% position from top</p>
+    
+    <div class="screenshot-container">
+        <h2>Screenshot 1: 5_337_test.jpg</h2>
+        <div class="grid-overlay">
+            <img src="5_337_test.jpg" id="img1" onload="drawLine(this, 'line1')">
+            <div id="line1" class="position-line" style="display: none;">
+                <span class="label">22% Expected</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="screenshot-container">
+        <h2>Screenshot 2: 5_338_test.jpg</h2>
+        <div class="grid-overlay">
+            <img src="5_338_test.jpg" id="img2" onload="drawLine(this, 'line2')">
+            <div id="line2" class="position-line" style="display: none;">
+                <span class="label">22% Expected</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="screenshot-container">
+        <h2>Screenshot 3: 5_339_test.jpg</h2>
+        <div class="grid-overlay">
+            <img src="5_339_test.jpg" id="img3" onload="drawLine(this, 'line3')">
+            <div id="line3" class="position-line" style="display: none;">
+                <span class="label">22% Expected</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function drawLine(img, lineId) {
+            const line = document.getElementById(lineId);
+            const container = line.parentElement;
+            const imgHeight = img.offsetHeight;
+            const top22Percent = imgHeight * 0.22;
+            
+            line.style.top = top22Percent + 'px';
+            line.style.display = 'block';
+            
+            console.log(`Image: ${img.src}`);
+            console.log(`Height: ${imgHeight}px`);
+            console.log(`22% position: ${top22Percent}px`);
+        }
+        
+        // Also add visual grid overlay
+        document.querySelectorAll('.screenshot-container').forEach((container, idx) => {
+            const img = container.querySelector('img');
+            if (img) {
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.style.position = 'absolute';
+                    canvas.style.top = '0';
+                    canvas.style.left = '0';
+                    canvas.width = img.offsetWidth;
+                    canvas.height = img.offsetHeight;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw 22% line
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, img.offsetHeight * 0.22);
+                    ctx.lineTo(img.offsetWidth, img.offsetHeight * 0.22);
+                    ctx.stroke();
+                    
+                    const overlay = img.parentElement;
+                    overlay.style.position = 'relative';
+                    overlay.appendChild(canvas);
+                };
+            }
+        });
+    </script>
+</body>
+</html>
+
+

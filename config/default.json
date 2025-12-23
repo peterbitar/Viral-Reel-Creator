@@ -1,0 +1,16 @@
+{
+  "active_experiment": "cats_crunch_dec22",
+  "niche": "cats",
+  "region": "CA",
+  "clip_length_sec": 9,
+  "overlap_sec": 1,
+  "hooks_per_clip": 4,
+  "captions_per_variant": 3,
+  "score_weights": {
+    "views": 1,
+    "saves": 5,
+    "comments": 3
+  },
+  "winner_top_pct": 0.2,
+  "dead_bottom_pct": 0.5
+}

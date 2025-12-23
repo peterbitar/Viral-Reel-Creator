@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viral Reel Creator - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: white; margin-bottom: 30px; text-align: center; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 { font-size: 2em; color: #667eea; margin-bottom: 5px; }
+        .stat-card p { color: #666; font-size: 0.85em; text-transform: uppercase; }
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .section h2 { color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .video-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        .video-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .video-card h4 { margin-bottom: 10px; color: #333; }
+        .video-card video { 
+            width: 100%; 
+            max-width: 100%;
+            max-height: 400px;
+            height: auto;
+            border-radius: 6px; 
+            margin-bottom: 10px; 
+            background: #000;
+            object-fit: contain;
+        }
+        .video-card .meta { font-size: 0.85em; color: #666; margin-bottom: 5px; }
+        .video-card .hook { font-weight: bold; color: #667eea; margin: 10px 0; font-style: italic; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .status-generated { background: #e3f2fd; color: #1976d2; }
+        .status-approved { background: #e8f5e9; color: #388e3c; }
+        .status-rejected { background: #ffebee; color: #c62828; }
+        .status-winner { background: #fff3e0; color: #f57c00; }
+        .status-dead { background: #fafafa; color: #616161; }
+        .status-posted { background: #f3e5f5; color: #7b1fa2; }
+        .btn {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        .btn-approve { background: #4caf50; color: white; }
+        .btn-reject { background: #f44336; color: white; }
+        .btn-post { background: #2196f3; color: white; }
+        .btn-clear { background: #ff9800; color: white; }
+        .btn-regenerate { background: #9c27b0; color: white; }
+        .btn:hover { opacity: 0.9; transform: scale(1.05); }
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .job-status-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .job-status-item.running {
+            border-left: 4px solid #2196f3;
+        }
+        .job-status-item.pending {
+            border-left: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Viral Reel Creator Dashboard</h1>
+
+        <div class="stats-grid" id="stats">
+            <div class="stat-card"><h3 id="stat-videos">0</h3><p>Videos</p></div>
+            <div class="stat-card"><h3 id="stat-clips">0</h3><p>Clips</p></div>
+            <div class="stat-card"><h3 id="stat-hooks">0</h3><p>Hooks</p></div>
+            <div class="stat-card"><h3 id="stat-variants">0</h3><p>Variants</p></div>
+            <div class="stat-card"><h3 id="stat-posts">0</h3><p>Posts</p></div>
+            <div class="stat-card" id="jobs-card">
+                <h3 id="stat-jobs">0</h3>
+                <p id="jobs-label">Pending Jobs</p>
+                <div id="jobs-detail" style="font-size: 0.7em; margin-top: 5px; color: #999;"></div>
+            </div>
+        </div>
+
+        <div id="generation-status" class="section" style="display: none; background: #fff3cd; border-left: 4px solid #ffc107;">
+            <h2 style="border-bottom: 2px solid #ffc107;">⚙️ Generation Status</h2>
+            <div id="status-content"></div>
+        </div>
+
+        <div class="section">
+            <h2>🎨 Generated Variants</h2>
+            <div id="variants-container" class="loading">Loading variants...</div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-clear" onclick="clearVideos()">🗑️ Clear All</button>
+        <button class="btn btn-regenerate" onclick="regenerateVideos()">🔄 Regenerate</button>
+    </div>
+
+    <button id="auto-refresh-btn" class="refresh-btn" onclick="toggleAutoRefresh()">▶️ Start Auto-Refresh</button>
+    <button class="refresh-btn" onclick="loadData()" style="bottom: 90px; right: 30px; background: #2196f3; position: fixed;">🔄 Refresh Now</button>
+
+    <script>
+        function getStatusBadge(status) {
+            const classes = {
+                'generated': 'status-generated',
+                'approved': 'status-approved',
+                'rejected': 'status-rejected',
+                'winner': 'status-winner',
+                'dead': 'status-dead',
+                'posted': 'status-posted'
+            };
+            const className = classes[status] || 'status-generated';
+            return `<span class="status-badge ${className}">${status}</span>`;
+        }
+
+        function getVideoUrl(filepath) {
+            if (!filepath) return '';
+            // Convert absolute path to relative URL for static serving
+            // e.g., /Users/.../working/variants/1_1.mp4 -> /working/variants/1_1.mp4
+            if (filepath.includes('/working/variants/')) {
+                return '/working/variants/' + filepath.split('/working/variants/')[1];
+            }
+            if (filepath.includes('/working/clips/')) {
+                return '/working/clips/' + filepath.split('/working/clips/')[1];
+            }
+            if (filepath.includes('working/variants/')) {
+                return '/working/variants/' + filepath.split('working/variants/')[1];
+            }
+            if (filepath.includes('working/clips/')) {
+                return '/working/clips/' + filepath.split('working/clips/')[1];
+            }
+            // If it's already a relative path starting with /working, use it as-is
+            if (filepath.startsWith('/working/')) {
+                return filepath;
+            }
+            return filepath;
+        }
+
+        async function loadJobStatus() {
+            try {
+                const res = await fetch('/api/jobs/status');
+                const status = await res.json();
+                
+                const totalActive = status.pending + status.running;
+                const jobsCard = document.getElementById('jobs-card');
+                const jobsLabel = document.getElementById('jobs-label');
+                const jobsDetail = document.getElementById('jobs-detail');
+                const statusSection = document.getElementById('generation-status');
+                const statusContent = document.getElementById('status-content');
+
+                if (totalActive > 0) {
+                    jobsCard.style.background = '#fff3cd';
+                    jobsLabel.textContent = status.running > 0 ? 'Jobs Running' : 'Jobs Pending';
+                    document.getElementById('stat-jobs').innerHTML = `<span class="spinner"></span> ${totalActive}`;
+                    
+                    // Show detailed status
+                    let detailHtml = '';
+                    if (status.running > 0) {
+                        detailHtml += `<span style="color: #2196f3;">🔄 ${status.running} running</span>`;
+                    }
+                    if (status.pending > 0) {
+                        if (detailHtml) detailHtml += ' | ';
+                        detailHtml += `<span style="color: #ff9800;">⏳ ${status.pending} pending</span>`;
+                    }
+                    jobsDetail.innerHTML = detailHtml;
+
+                    // Show detailed status section
+                    statusSection.style.display = 'block';
+                    let statusHtml = '';
+                    
+                    const jobTypes = {
+                        'gen_hooks': '🔤 Generating Hooks',
+                        'render': '🎬 Rendering Variants',
+                        'gen_captions': '📝 Generating Captions',
+                        'postpack': '📦 Creating Postpacks',
+                    };
+
+                    for (const [type, counts] of Object.entries(status.by_type)) {
+                        const pending = counts.pending || 0;
+                        const running = counts.running || 0;
+                        if (pending > 0 || running > 0) {
+                            const label = jobTypes[type] || type;
+                            statusHtml += `
+                                <div class="job-status-item ${running > 0 ? 'running' : 'pending'}">
+                                    <span>${label}</span>
+                                    <span>
+                                        ${running > 0 ? `<span class="spinner"></span> ${running} running` : ''}
+                                        ${pending > 0 ? `${running > 0 ? ' | ' : ''}${pending} pending` : ''}
+                                    </span>
+                                </div>
+                            `;
+                        }
+                    }
+                    statusContent.innerHTML = statusHtml || '<div>No active jobs</div>';
+                } else {
+                    jobsCard.style.background = '';
+                    jobsLabel.textContent = 'Pending Jobs';
+                    document.getElementById('stat-jobs').textContent = '0';
+                    jobsDetail.innerHTML = '';
+                    statusSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading job status:', error);
+            }
+        }
+
+        async function loadCounts() {
+            try {
+                const res = await fetch('/api/counts');
+                const counts = await res.json();
+                document.getElementById('stat-videos').textContent = counts.videos;
+                document.getElementById('stat-clips').textContent = counts.clips;
+                document.getElementById('stat-hooks').textContent = counts.hooks;
+                document.getElementById('stat-variants').textContent = counts.variants;
+                document.getElementById('stat-posts').textContent = counts.posts;
+                
+                // Update jobs count (will be overridden by loadJobStatus if active)
+                if (counts.jobs_pending === 0 && counts.jobs_running === 0) {
+                    document.getElementById('stat-jobs').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading counts:', error);
+            }
+        }
+
+        async function loadVariants() {
+            try {
+                const res = await fetch('/api/variants');
+                const variants = await res.json();
+                const container = document.getElementById('variants-container');
+                
+                if (variants.length === 0) {
+                    container.innerHTML = '<div class="loading">No variants found</div>';
+                    return;
+                }
+
+                // Store current scroll position
+                const scrollPos = window.scrollY;
+
+                let html = '<div class="video-grid">';
+                variants.forEach(v => {
+                    const videoUrl = v.filepath_variant ? getVideoUrl(v.filepath_variant) : '';
+                    html += `
+                        <div class="video-card" data-variant-id="${v.id}">
+                            <h4>Variant #${v.id} ${getStatusBadge(v.status)}</h4>
+                            <div class="hook">"${v.hook_text}"</div>
+                            <div class="meta">Generation: ${v.generation} | Clip: #${v.clip_id} | Captions: ${v.caption_count} | Posts: ${v.post_count}</div>
+                            ${videoUrl ? `
+                                <video controls width="100%" preload="metadata">
+                                    <source src="${videoUrl}" type="video/mp4">
+                                </video>
+                            ` : ''}
+                            ${v.status === 'generated' ? `
+                                <div style="margin-top: 10px;">
+                                    <button class="btn btn-approve" onclick="approveVariant(${v.id})">Approve</button>
+                                    <button class="btn btn-reject" onclick="rejectVariant(${v.id})">Reject</button>
+                                    <button class="btn btn-post" onclick="markPosted(${v.id})">Mark Posted</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+
+                // Restore scroll position
+                window.scrollTo(0, scrollPos);
+            } catch (error) {
+                console.error('Error loading variants:', error);
+                document.getElementById('variants-container').innerHTML = '<div class="loading">Error loading variants</div>';
+            }
+        }
+
+        async function approveVariant(id) {
+            try {
+                await fetch(`/api/variants/${id}/approve`, { method: 'POST' });
+                // Update just the status badge without full reload if auto-refresh is off
+                if (!isAutoRefresh) {
+                    const card = document.querySelector(`[data-variant-id="${id}"]`);
+                    if (card) {
+                        const badge = card.querySelector('.status-badge');
+                        if (badge) {
+                            badge.className = 'status-badge status-approved';
+                            badge.textContent = 'approved';
+                        }
+                    }
+                } else {
+                    loadVariants();
+                }
+            } catch (error) {
+                alert('Error approving variant');
+            }
+        }
+
+        async function rejectVariant(id) {
+            try {
+                await fetch(`/api/variants/${id}/reject`, { method: 'POST' });
+                // Update just the status badge without full reload if auto-refresh is off
+                if (!isAutoRefresh) {
+                    const card = document.querySelector(`[data-variant-id="${id}"]`);
+                    if (card) {
+                        const badge = card.querySelector('.status-badge');
+                        if (badge) {
+                            badge.className = 'status-badge status-rejected';
+                            badge.textContent = 'rejected';
+                        }
+                    }
+                } else {
+                    loadVariants();
+                }
+            } catch (error) {
+                alert('Error rejecting variant');
+            }
+        }
+
+        async function markPosted(id) {
+            const platform = prompt('Platform (tiktok/instagram/youtube):');
+            if (!platform) return;
+            const url = prompt('URL (optional):') || null;
+            try {
+                await fetch(`/api/variants/${id}/posted`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ platform, url })
+                });
+                loadData();
+            } catch (error) {
+                alert('Error marking as posted');
+            }
+        }
+
+        let refreshInterval = null;
+        let isAutoRefresh = false;
+
+        async function clearVideos() {
+            if (!confirm('Are you sure you want to clear all variants, hooks, and generated videos? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/clear', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Videos cleared successfully!');
+                    loadData();
+                } else {
+                    alert('Error clearing videos: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error clearing videos');
+            }
+        }
+
+        async function regenerateVideos() {
+            if (!confirm('Regenerate all variants? This will create new hooks and videos with the current settings.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/regenerate', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    const msg = `Regeneration started!\n${data.gen_hooks_jobs || 0} hook generation jobs\n${data.render_jobs || 0} render jobs\n\nVideos will be generated in the background. Run "npm run worker" to process jobs.`;
+                    alert(msg);
+                    loadData();
+                } else {
+                    alert('Error starting regeneration: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error starting regeneration');
+            }
+        }
+
+        async function loadData() {
+            await Promise.all([loadCounts(), loadJobStatus(), loadVariants()]);
+        }
+
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('auto-refresh-btn');
+            if (isAutoRefresh) {
+                clearInterval(refreshInterval);
+                isAutoRefresh = false;
+                btn.textContent = '▶️ Start Auto-Refresh';
+                btn.style.background = '#4caf50';
+            } else {
+                refreshInterval = setInterval(loadData, 5000);
+                isAutoRefresh = true;
+                btn.textContent = '⏸️ Stop Auto-Refresh';
+                btn.style.background = '#f44336';
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
+

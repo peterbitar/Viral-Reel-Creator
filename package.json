@@ -1,0 +1,49 @@
+{
+  "name": "viral-reel-creator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "ingest": "tsx src/ingest/watchRaw.ts",
+    "slice": "tsx src/slice/sliceVideo.ts",
+    "hooks": "tsx src/llm/genHooks.ts",
+    "render": "tsx src/render/renderVariants.ts",
+    "captions": "tsx src/llm/genCaptions.ts",
+    "postpacks": "tsx src/postpacks/makePostpacks.ts",
+    "metrics": "tsx src/metrics/addMetrics.ts",
+    "score": "tsx src/score/computeScores.ts",
+    "winners": "tsx src/winners/selectWinners.ts",
+    "mutate": "tsx src/winners/mutateWinners.ts",
+    "process": "tsx src/pipeline/processAll.ts",
+    "continue": "tsx src/pipeline/continueProcessing.ts",
+    "list": "tsx src/ui/listVariants.ts",
+    "approve": "tsx src/ui/approveVariant.ts",
+    "reject": "tsx src/ui/rejectVariant.ts",
+    "post": "tsx src/ui/markPosted.ts",
+    "ui": "tsx src/ui/server.ts",
+    "server": "tsx src/server.ts",
+    "job": "tsx src/jobs/run.ts",
+    "migrate": "tsx src/db/migrate.ts",
+    "worker": "tsx src/jobs/worker-continuous.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.3",
+    "nodemon": "^3.1.11",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.5.0",
+    "chokidar": "^5.0.0",
+    "dotenv": "^17.2.3",
+    "execa": "^8.0.1",
+    "express": "^5.2.1",
+    "ws": "^8.18.3",
+    "zod": "^4.2.1"
+  }
+}
